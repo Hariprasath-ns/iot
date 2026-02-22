@@ -28,18 +28,40 @@
   <p id="hum">-- %</p>
 </div>
 
-<script>
-const url =
-"https://api.thingspeak.com/channels/3272751/feeds.json?api_key=ZLLHL9EPP9OWJNV0&results=1";
+<div style="margin-top:10px;">
+  <small id="status">Status: idle</small>
+</div>
 
-function fetchData() {
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      const feed = data.feeds[0];
-      document.getElementById("temp").innerText = feed.field1 + " °C";
-      document.getElementById("hum").innerText = feed.field2 + " %";
-    });
+<script>
+// Use the correct ThingSpeak channel ID (provided by you)
+const url = "https://api.thingspeak.com/channels/3272831/feeds.json?api_key=ZLLHL9EPP9OWJNV0&results=1";
+
+async function fetchData() {
+  const statusEl = document.getElementById('status');
+  try {
+    statusEl.innerText = 'Status: fetching...';
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error('HTTP error', res.status, res.statusText);
+      statusEl.innerText = `Status: HTTP ${res.status}`;
+      return;
+    }
+    const data = await res.json();
+    console.log('ThingSpeak response:', data);
+    const feed = data && data.feeds && data.feeds[0];
+    if (!feed) {
+      statusEl.innerText = 'Status: no feed data';
+      document.getElementById('temp').innerText = '-- °C';
+      document.getElementById('hum').innerText = '-- %';
+      return;
+    }
+    document.getElementById('temp').innerText = (feed.field1 ?? '--') + ' °C';
+    document.getElementById('hum').innerText = (feed.field2 ?? '--') + ' %';
+    statusEl.innerText = 'Status: updated';
+  } catch (err) {
+    console.error('Fetch error:', err);
+    document.getElementById('status').innerText = 'Status: fetch error (see console)';
+  }
 }
 
 fetchData();
