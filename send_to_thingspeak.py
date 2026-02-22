@@ -3,7 +3,7 @@ import requests
 import board
 import adafruit_dht
 
-WRITE_API_KEY = "YOUR_WRITE_API_KEY"
+WRITE_API_KEY = "GEQ08QL296WUAAHJ"
 THINGSPEAK_URL = "https://api.thingspeak.com/update"
 
 dht = adafruit_dht.DHT11(board.D4)  # GPIO4
