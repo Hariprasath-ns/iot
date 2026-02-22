@@ -31,34 +31,106 @@
 <div style="margin-top:10px;">
   <small id="status">Status: idle</small>
 </div>
+<!-- Charts and updated UI -->
+<div style="max-width:1000px;margin:20px auto;">
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start;">
+    <div class="card" style="width:100%;box-shadow:0 6px 18px rgba(0,0,0,0.12);">
+      <h2 style="margin-top:0;">Temperature (last 20)</h2>
+      <canvas id="tempChart" height="160"></canvas>
+    </div>
 
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div class="card" style="box-shadow:0 6px 18px rgba(0,0,0,0.12);">
+        <h2 style="margin-top:0;">Humidity (bar)</h2>
+        <canvas id="humBarChart" height="140"></canvas>
+      </div>
+
+      <div class="card" style="box-shadow:0 6px 18px rgba(0,0,0,0.12);">
+        <h2 style="margin-top:0;">Humidity / Dryness (latest)</h2>
+        <canvas id="humPieChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Use the correct ThingSpeak channel ID (provided by you)
-const url = "https://api.thingspeak.com/channels/3272831/feeds.json?api_key=ZLLHL9EPP9OWJNV0&results=1";
+// Use the correct ThingSpeak channel ID (provided by you). Fetch last 20 points.
+const url = "https://api.thingspeak.com/channels/3272831/feeds.json?api_key=ZLLHL9EPP9OWJNV0&results=20";
+
+let tempChart, humBarChart, humPieChart;
+
+function createCharts() {
+  const tempCtx = document.getElementById('tempChart').getContext('2d');
+  tempChart = new Chart(tempCtx, {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'Temperature (°C)', data: [], fill: true, backgroundColor: 'rgba(255,99,132,0.15)', borderColor: 'rgba(255,99,132,1)', tension:0.3, pointRadius:3 }] },
+    options: { responsive:true, plugins:{legend:{display:true}}, scales:{y:{beginAtZero:false}} }
+  });
+
+  const humBarCtx = document.getElementById('humBarChart').getContext('2d');
+  humBarChart = new Chart(humBarCtx, {
+    type: 'bar',
+    data: { labels: [], datasets: [{ label: 'Humidity (%)', data: [], backgroundColor: [], borderColor: [], borderWidth:1 }] },
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, max:100}} }
+  });
+
+  const humPieCtx = document.getElementById('humPieChart').getContext('2d');
+  humPieChart = new Chart(humPieCtx, {
+    type: 'pie',
+    data: { labels: ['Humidity','Dryness'], datasets: [{ data: [0,100], backgroundColor:['#36A2EB','#E5E7EB'] }] },
+    options: { responsive:true }
+  });
+}
+
+function paletteForBars(n){
+  const base = ['#4BC0C0','#36A2EB','#9966FF','#FF9F40','#FF6384','#C9CBCF'];
+  const arr = [];
+  for(let i=0;i<n;i++) arr.push(base[i%base.length]);
+  return arr;
+}
 
 async function fetchData() {
   const statusEl = document.getElementById('status');
   try {
     statusEl.innerText = 'Status: fetching...';
     const res = await fetch(url);
-    if (!res.ok) {
-      console.error('HTTP error', res.status, res.statusText);
-      statusEl.innerText = `Status: HTTP ${res.status}`;
-      return;
-    }
+    if (!res.ok) { statusEl.innerText = `Status: HTTP ${res.status}`; console.error(res.statusText); return; }
     const data = await res.json();
-    console.log('ThingSpeak response:', data);
-    const feed = data && data.feeds && data.feeds[0];
-    if (!feed) {
-      statusEl.innerText = 'Status: no feed data';
-      document.getElementById('temp').innerText = '-- °C';
-      document.getElementById('hum').innerText = '-- %';
-      return;
-    }
-    document.getElementById('temp').innerText = (feed.field1 ?? '--') + ' °C';
-    document.getElementById('hum').innerText = (feed.field2 ?? '--') + ' %';
+    const feeds = (data && data.feeds) || [];
+    if (feeds.length === 0) { statusEl.innerText = 'Status: no feed data'; return; }
+
+    const labels = feeds.map(f => new Date(f.created_at).toLocaleTimeString());
+    const temps = feeds.map(f => f.field1 ? parseFloat(f.field1) : null);
+    const hums = feeds.map(f => f.field2 ? parseFloat(f.field2) : null);
+
+    // Update textual latest values
+    const latest = feeds[feeds.length-1];
+    document.getElementById('temp').innerText = (latest.field1 ?? '--') + ' °C';
+    document.getElementById('hum').innerText = (latest.field2 ?? '--') + ' %';
+
+    // Initialize charts if needed
+    if(!tempChart) createCharts();
+
+    // Update temp chart
+    tempChart.data.labels = labels;
+    tempChart.data.datasets[0].data = temps;
+    tempChart.update();
+
+    // Update humidity bar chart
+    humBarChart.data.labels = labels;
+    humBarChart.data.datasets[0].data = hums;
+    humBarChart.data.datasets[0].backgroundColor = paletteForBars(hums.length);
+    humBarChart.update();
+
+    // Update pie chart (latest humidity vs dryness)
+    const latestHum = parseFloat(latest.field2) || 0;
+    humPieChart.data.datasets[0].data = [latestHum, Math.max(0,100-latestHum)];
+    humPieChart.update();
+
     statusEl.innerText = 'Status: updated';
-  } catch (err) {
+  } catch(err) {
     console.error('Fetch error:', err);
     document.getElementById('status').innerText = 'Status: fetch error (see console)';
   }
