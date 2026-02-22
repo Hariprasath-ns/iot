@@ -4,101 +4,118 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IoT Temperature & Humidity Dashboard</title>
+<title>Smart IoT Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #141e30, #243b55);
-    color: white;
-    text-align: center;
+body{
+    margin:0;
+    font-family:Segoe UI;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:white;
+    text-align:center;
 }
 
-h1 { margin-top: 20px; }
+/* ---------- CARDS ---------- */
 
-.container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.card {
-    position: relative;
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(15px);
-    border-radius: 15px;
-    padding: 25px;
-    width: 260px;
-    height: 180px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    overflow: hidden;
+.container{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:25px;
+    margin-top:25px;
 }
 
-.value {
-    font-size: 38px;
-    font-weight: bold;
-    margin-top: 10px;
-    position: relative;
-    z-index: 2;
+.card{
+    position:relative;
+    width:260px;
+    height:190px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.1);
+    backdrop-filter:blur(15px);
+    box-shadow:0 0 30px rgba(0,0,0,0.4);
+    overflow:hidden;
+    transition:.4s;
 }
 
-/* Fire */
-.fire {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 80px;
-    height: 80px;
-    transform: translateX(-50%);
-    background: radial-gradient(circle, rgba(255,120,0,0.9) 0%, rgba(255,0,0,0.4) 60%, transparent 70%);
-    border-radius: 50%;
-    animation: fireMove 1s infinite alternate;
-    filter: blur(8px);
-}
-@keyframes fireMove {
-    from { transform: translateX(-50%) scale(1); }
-    to { transform: translateX(-50%) scale(1.25); }
+.card:hover{
+    transform:translateY(-8px) scale(1.03);
+    box-shadow:0 0 40px rgba(0,255,255,0.4);
 }
 
-/* Water */
-.water {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 50%;
-    background: rgba(0,150,255,0.4);
-    border-radius: 0 0 15px 15px;
-    animation: wave 3s infinite linear;
-}
-@keyframes wave {
-    0% { clip-path: ellipse(150% 60% at 50% 100%); }
-    50% { clip-path: ellipse(140% 55% at 50% 100%); }
-    100% { clip-path: ellipse(150% 60% at 50% 100%); }
+.value{
+    font-size:40px;
+    font-weight:bold;
+    z-index:2;
+    position:relative;
 }
 
-.chart-container {
-    width: 420px;
-    max-width: 95%;
-    margin: 25px auto;
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    animation: fadeIn 1s ease;
+/* ---------- FIRE ---------- */
+
+.fire{
+    position:absolute;
+    bottom:0;
+    left:50%;
+    width:120px;
+    height:120px;
+    transform:translateX(-50%);
+    border-radius:50%;
+    filter:blur(10px);
+    background:radial-gradient(circle,#ff6600,#ff0000,transparent);
+    animation:fireMove 1s infinite alternate;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes fireMove{
+    from{transform:translateX(-50%) scale(1)}
+    to{transform:translateX(-50%) scale(1.3)}
 }
 
-.status { margin: 10px; font-size: 14px; }
+/* ---------- WATER ---------- */
+
+.water{
+    position:absolute;
+    bottom:0;
+    width:100%;
+    height:40%;
+    background:linear-gradient(180deg,#00c6ff,#0072ff);
+    animation:wave 3s infinite linear;
+}
+
+@keyframes wave{
+    0%{clip-path:ellipse(140% 60% at 50% 100%)}
+    50%{clip-path:ellipse(130% 55% at 50% 100%)}
+    100%{clip-path:ellipse(140% 60% at 50% 100%)}
+}
+
+/* ---------- CHARTS ---------- */
+
+.chart-box{
+    width:450px;
+    max-width:95%;
+    margin:30px auto;
+    background:rgba(255,255,255,0.08);
+    border-radius:20px;
+    padding:20px;
+    backdrop-filter:blur(10px);
+    box-shadow:0 0 25px rgba(0,0,0,0.3);
+    transition:.5s;
+}
+
+.chart-box:hover{
+    transform:scale(1.02);
+    box-shadow:0 0 35px rgba(0,255,255,0.4);
+}
+
+canvas{
+    filter:drop-shadow(0 0 10px rgba(0,255,255,0.3));
+}
+
+.status{
+    margin:15px;
+    font-size:14px;
+}
 
 </style>
 
@@ -106,183 +123,182 @@ h1 { margin-top: 20px; }
 
 <body>
 
-<h1>🌡 IoT Temperature & Humidity Dashboard</h1>
+<h1>🌡 Smart IoT Weather Dashboard</h1>
 
 <div class="container">
 
 <div class="card">
-    <h2>Temperature</h2>
+    <h3>Temperature</h3>
     <div id="temp" class="value">-- °C</div>
-    <div class="fire"></div>
+    <div class="fire" id="fire"></div>
 </div>
 
 <div class="card">
-    <h2>Humidity</h2>
+    <h3>Humidity</h3>
     <div id="hum" class="value">-- %</div>
-    <div class="water"></div>
+    <div class="water" id="water"></div>
 </div>
 
 </div>
 
-<div class="chart-container">
-    <canvas id="barChart"></canvas>
+<div class="chart-box">
+<canvas id="barChart"></canvas>
 </div>
 
-<div class="chart-container">
-    <canvas id="pieChart"></canvas>
+<div class="chart-box">
+<canvas id="pieChart"></canvas>
 </div>
 
-<div class="chart-container">
-    <canvas id="lineChart"></canvas>
+<div class="chart-box">
+<canvas id="lineChart"></canvas>
 </div>
 
 <div class="status" id="status">Status: Idle</div>
 
 <script>
 
-const url = "https://api.thingspeak.com/channels/3272831/feeds.json?api_key=ZLLHL9EPP9OWJNV0&results=1";
+const url="https://api.thingspeak.com/channels/3272831/feeds.json?api_key=ZLLHL9EPP9OWJNV0&results=1";
 
-let barChart, pieChart, lineChart;
-let tempHistory = [];
-let humHistory = [];
-let timeLabels = [];
+let tempHistory=[];
+let humHistory=[];
+let labels=[];
 
-function initCharts() {
+/* ---------- INIT CHARTS ---------- */
 
-    const lineCtx = document.getElementById('lineChart').getContext('2d');
+const barCtx=document.getElementById("barChart");
+const pieCtx=document.getElementById("pieChart");
+const lineCtx=document.getElementById("lineChart");
 
-    const gradient = lineCtx.createLinearGradient(0,0,0,400);
-    gradient.addColorStop(0,"rgba(255,99,132,0.4)");
-    gradient.addColorStop(1,"rgba(54,162,235,0)");
+const gradient=lineCtx.getContext("2d").createLinearGradient(0,0,0,400);
+gradient.addColorStop(0,"rgba(255,99,132,0.6)");
+gradient.addColorStop(1,"rgba(0,0,0,0)");
 
-    lineChart = new Chart(lineCtx, {
-        type: 'line',
-        data: {
-            labels: timeLabels,
-            datasets: [
-                {
-                    label: 'Temperature °C',
-                    data: tempHistory,
-                    borderColor: '#ff6384',
-                    backgroundColor: gradient,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4
-                },
-                {
-                    label: 'Humidity %',
-                    data: humHistory,
-                    borderColor: '#36a2eb',
-                    fill: false,
-                    tension: 0.4,
-                    pointRadius: 4
-                }
-            ]
-        },
-        options: {
-            animation: {
-                duration: 1200,
-                easing: 'easeOutQuart'
-            }
-        }
-    });
-}
-
-function updateCharts(temp, hum) {
-
-    // BAR
-    const barCtx = document.getElementById('barChart');
-    if (barChart) barChart.destroy();
-
-    barChart = new Chart(barCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Temperature', 'Humidity'],
-            datasets: [{
-                data: [temp, hum],
-                backgroundColor: ['#ff6384', '#36a2eb'],
-                borderRadius: 10
-            }]
-        },
-        options: {
-            animation: {
-                duration: 1500,
-                easing: 'easeOutBounce'
-            },
-            plugins: { legend: { display: false } }
-        }
-    });
-
-    // PIE
-    const pieCtx = document.getElementById('pieChart');
-    if (pieChart) pieChart.destroy();
-
-    pieChart = new Chart(pieCtx, {
-        type: 'pie',
-        data: {
-            labels: ['Temperature', 'Humidity'],
-            datasets: [{
-                data: [temp, hum],
-                backgroundColor: ['#ff6384', '#36a2eb'],
-                hoverOffset: 20
-            }]
-        },
-        options: {
-            animation: {
-                animateRotate: true,
-                duration: 1500
-            }
-        }
-    });
-
-    lineChart.update();
-}
-
-async function fetchData() {
-
-    const statusEl = document.getElementById("status");
-
-    try {
-
-        statusEl.innerText = "Status: Fetching...";
-        const response = await fetch(url);
-        const data = await response.json();
-
-        const feed = data.feeds[0];
-
-        const temp = parseFloat(feed.field1) || 0;
-        const hum = parseFloat(feed.field2) || 0;
-
-        document.getElementById("temp").innerText = temp + " °C";
-        document.getElementById("hum").innerText = hum + " %";
-
-        const time = new Date().toLocaleTimeString();
-
-        tempHistory.push(temp);
-        humHistory.push(hum);
-        timeLabels.push(time);
-
-        if (tempHistory.length > 15) {
-            tempHistory.shift();
-            humHistory.shift();
-            timeLabels.shift();
-        }
-
-        updateCharts(temp, hum);
-
-        statusEl.innerText = "Status: Updated ✔";
-
-    } catch (error) {
-
-        console.error(error);
-        statusEl.innerText = "Status: Error fetching data";
-
+const barChart=new Chart(barCtx,{
+    type:"bar",
+    data:{
+        labels:["Temperature","Humidity"],
+        datasets:[{
+            data:[0,0],
+            backgroundColor:["#ff512f","#00c6ff"],
+            borderRadius:12
+        }]
+    },
+    options:{
+        animation:{duration:1500,easing:"easeOutElastic"},
+        plugins:{legend:{display:false}}
     }
+});
+
+const pieChart=new Chart(pieCtx,{
+    type:"doughnut",
+    data:{
+        labels:["Temperature","Humidity"],
+        datasets:[{
+            data:[0,0],
+            backgroundColor:["#ff512f","#00c6ff"],
+            hoverOffset:30
+        }]
+    },
+    options:{
+        cutout:"60%",
+        animation:{animateRotate:true,duration:2000}
+    }
+});
+
+const lineChart=new Chart(lineCtx,{
+    type:"line",
+    data:{
+        labels:labels,
+        datasets:[
+            {
+                label:"Temperature",
+                data:tempHistory,
+                borderColor:"#ff512f",
+                backgroundColor:gradient,
+                fill:true,
+                tension:0.4
+            },
+            {
+                label:"Humidity",
+                data:humHistory,
+                borderColor:"#00c6ff",
+                fill:false,
+                tension:0.4
+            }
+        ]
+    },
+    options:{
+        animation:{duration:1200},
+        scales:{y:{beginAtZero:true}}
+    }
+});
+
+/* ---------- FETCH DATA ---------- */
+
+async function fetchData(){
+
+const status=document.getElementById("status");
+
+try{
+
+status.innerText="Fetching...";
+const res=await fetch(url);
+const data=await res.json();
+
+const feed=data.feeds[0];
+
+const temp=parseFloat(feed.field1)||0;
+const hum=parseFloat(feed.field2)||0;
+
+/* UI Update */
+
+document.getElementById("temp").innerText=temp+" °C";
+document.getElementById("hum").innerText=hum+" %";
+
+/* Fire intensity */
+
+document.getElementById("fire").style.transform=
+`translateX(-50%) scale(${1+temp/50})`;
+
+/* Water level */
+
+document.getElementById("water").style.height=hum+"%";
+
+/* Charts update */
+
+barChart.data.datasets[0].data=[temp,hum];
+barChart.update();
+
+pieChart.data.datasets[0].data=[temp,hum];
+pieChart.update();
+
+/* Line history */
+
+labels.push(new Date().toLocaleTimeString());
+tempHistory.push(temp);
+humHistory.push(hum);
+
+if(labels.length>15){
+labels.shift();
+tempHistory.shift();
+humHistory.shift();
 }
 
-initCharts();
+lineChart.update();
+
+status.innerText="Updated ✔";
+
+}catch(err){
+
+console.log(err);
+status.innerText="Error";
+
+}
+
+}
+
 fetchData();
-setInterval(fetchData, 5000);
+setInterval(fetchData,5000);
 
 </script>
 
